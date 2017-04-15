@@ -31,6 +31,10 @@ public:
 private slots:
     void on_pushButton_clicked();
 
+    void on_spinBox_editingFinished();
+
+    void on_pushButton_2_clicked();
+
 private:
     Ui::izhikevich_SPNET *ui;
 
@@ -53,7 +57,10 @@ private:
     int N_firings; // the number of fired neurons
     const int N_firings_max = 100 * N; // upper limit on the number of fired neurons per sec
     vector<vector<int>> firings; //[N_frings_max][2] // indeces and timings of spikes
-    vector<double> I;
+    vector<double> I; //Current
+    long long sec = 0; //Simulation time
+    long long T = 0; //Total simulaton time
+    long long count_t = 0; //Sum of step
 };
 
 #endif // IZHIKEVICH_SPNET_H

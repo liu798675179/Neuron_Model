@@ -14,7 +14,6 @@ izhikevich_SPNET::izhikevich_SPNET(QWidget *parent) :
     ui(new Ui::izhikevich_SPNET)
 {
     ui->setupUi(this);
-    Initialize();
 }
 
 izhikevich_SPNET::~izhikevich_SPNET()
@@ -173,7 +172,7 @@ pair<QVector<double>, QVector<double>> izhikevich_SPNET::Data(){
 }
 
 void izhikevich_SPNET::Simulation() {
-    for (auto sec = 0; sec != 60 * 60 * 24; sec += 1) {	// simulation of 1 day
+    for (sec = 0; sec != T; sec += 1) {	// simulation of T sec
         for (auto t = 0; t != 1000; ++t) {			// simulation of 1 sec
             for (auto i = 0; i != N; ++i) I[i] = 0.0;	// reset the input
             for (auto i = 0; i != N / 1000; ++i) I[Get_Random(N)] = 20.0;		// random thalamic input
@@ -216,6 +215,11 @@ void izhikevich_SPNET::Simulation() {
 
         Control(Data());
 
+        ui->lcdNumber->setDecMode();
+        ui->lcdNumber->setDigitCount(6);
+        ui->lcdNumber->setSegmentStyle(QLCDNumber::Flat);
+        ui->lcdNumber->display(N_firings);
+
         for (auto i = 0; i != N; ++i) {		// prepare for the next sec
             for (auto j = 0; j != D + 1; ++j)
                 LTP[i][j] = LTP[i][1000 + j];
@@ -240,5 +244,27 @@ void izhikevich_SPNET::Simulation() {
 }
 
 void izhikevich_SPNET::on_pushButton_clicked() {
+    Initialize();
     Simulation();
+}
+
+void izhikevich_SPNET::on_spinBox_editingFinished() {
+    ui->spinBox->setMinimum(1);
+    ui->spinBox->setMaximum(86400);
+    T = ui->spinBox->value();
+}
+
+void izhikevich_SPNET::on_pushButton_2_clicked() {
+    count_t = ui->spinBox->value();
+    if(sec != count_t){
+        on_pushButton_clicked();
+        on_pushButton_2_clicked();
+    }
+    else{
+        T = 1;
+        Simulation();
+        ui->spinBox->setValue(++count_t);
+        T = ui->spinBox->value();
+        sec = T;
+    }
 }
