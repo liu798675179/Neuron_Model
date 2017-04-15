@@ -59,7 +59,7 @@ private:
     vector<vector<int>> firings; //[N_frings_max][2] // indeces and timings of spikes
     vector<double> I; //Current
     long long sec = 0; //Simulation time
-    long long T = 0; //Total simulaton time
+    long long T = 1; //Total simulaton time
     long long count_t = 0; //Sum of step
 };
 
