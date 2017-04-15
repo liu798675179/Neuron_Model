@@ -45,108 +45,108 @@ long long izhikevich_SPNET::Get_Random(const int &max) {
 
 void izhikevich_SPNET::Initialize() {
     post.resize(N);
-        for (auto &i : post) { i.resize(M); }
-        s.resize(N);
-        for (auto &i : s) { i.resize(M); }
-        sd.resize(N);
-        for (auto &i : sd) { i.resize(M); }
-        delays_length.resize(N);
-        for (auto &i : delays_length) { i.resize(D); }
-        delays.resize(N);
-        for (auto &i : delays) { i.resize(D); }
-        for (auto &i : delays) { for (auto &j : i) { j.resize(M); } }
-        N_pre.resize(N);
-        I_pre.resize(N);
-        for (auto &i : I_pre) { i.resize(3 * M); }
-        D_pre.resize(N);
-        for (auto &i : D_pre) { i.resize(3 * M); }
-        s_pre.resize(N);
-        for (auto &i : s_pre) { i.resize(3 * M); }
-        sd_pre.resize(N);
-        for (auto &i : sd_pre) { i.resize(3 * M); }
-        LTP.resize(N);
-        for (auto &i : LTP) { i.resize(1001 + D); }
-        LTD.resize(N);
-        a.resize(N);
-        d.resize(N);
-        V.resize(N);
-        U.resize(N);
-        firings.resize(N_firings_max);
-        for (auto &i : firings) { i.resize(2); }
-        I.resize(N);
+    for (auto &i : post) { i.resize(M); }
+    s.resize(N);
+    for (auto &i : s) { i.resize(M); }
+    sd.resize(N);
+    for (auto &i : sd) { i.resize(M); }
+    delays_length.resize(N);
+    for (auto &i : delays_length) { i.resize(D); }
+    delays.resize(N);
+    for (auto &i : delays) { i.resize(D); }
+    for (auto &i : delays) { for (auto &j : i) { j.resize(M); } }
+    N_pre.resize(N);
+    I_pre.resize(N);
+    for (auto &i : I_pre) { i.resize(3 * M); }
+    D_pre.resize(N);
+    for (auto &i : D_pre) { i.resize(3 * M); }
+    s_pre.resize(N);
+    for (auto &i : s_pre) { i.resize(3 * M); }
+    sd_pre.resize(N);
+    for (auto &i : sd_pre) { i.resize(3 * M); }
+    LTP.resize(N);
+    for (auto &i : LTP) { i.resize(1001 + D); }
+    LTD.resize(N);
+    a.resize(N);
+    d.resize(N);
+    V.resize(N);
+    U.resize(N);
+    firings.resize(N_firings_max);
+    for (auto &i : firings) { i.resize(2); }
+    I.resize(N);
 
-        for (auto i = 0; i != Ne; ++i) a[i] = 0.02;// RS type
-        for (auto i = Ne; i !=N; ++i) a[i] = 0.1; // FS type
+    for (auto i = 0; i != Ne; ++i) a[i] = 0.02;// RS type
+    for (auto i = Ne; i !=N; ++i) a[i] = 0.1; // FS type
 
-        for (auto i = 0; i !=Ne; ++i) d[i] = 8.0; // RS type
-        for (auto i = Ne; i != N; ++i) d[i] = 2.0; // FS type
+    for (auto i = 0; i !=Ne; ++i) d[i] = 8.0; // RS type
+    for (auto i = Ne; i != N; ++i) d[i] = 2.0; // FS type
 
-        long long r;
-        int exists;
-        for (auto i = 0; i != N; ++i) {
-            for (auto j = 0; j != M; ++j) {
-                do {
-                    exists = 0; // avoid multiple synapses
-                    if (i < Ne) {
-                        r = Get_Random(N);
-                    }
-                    else {
-                        r = Get_Random(Ne); // inh -> exc only
-                    }
-                    if (r == i) {
-                        exists = 1; // no self-synapses
-                    }
-                    for (auto k = 0; k != j; ++k) {
-                        if (post[i][k] == r) {
-                            exists = 1; // synapse already exists
-                        }
-                    }
-                } while (exists == 1);
-                post[i][j] = r;
-            }
-        }
-        for (auto i = 0; i != Ne; ++i)	for (auto j = 0; j != M; ++j) s[i][j] = 6.0;  // initial exc. synaptic weights
-        for (auto i = Ne; i != N; ++i)	for (auto j = 0; j != M; ++j) s[i][j] = -5.0; // inhibitory synaptic weights
-        for (auto i = 0; i != N; ++i)	for (auto j = 0; j != M; ++j) sd[i][j] = 0.0; // synaptic derivatives
-        for (auto i = 0; i != N; ++i) {
-            auto ind = 0;
-            if (i < Ne) {
-                for (auto j = 0; j != D; ++j) {
-                    delays_length[i][j] = M / D;	// uniform distribution of exc. synaptic delays
-                    for (auto k = 0; k != delays_length[i][j]; ++k) delays[i][j][k] = ind++;
+    long long r;
+    int exists;
+    for (auto i = 0; i != N; ++i) {
+        for (auto j = 0; j != M; ++j) {
+            do {
+                exists = 0; // avoid multiple synapses
+                if (i < Ne) {
+                    r = Get_Random(N);
                 }
-            }
-            else {
-                for (auto j = 0; j != D; ++j) delays_length[i][j] = 0;
-                delays_length[i][0] = M;			// all inhibitory delays are 1 ms
-                for (auto k = 0; k != delays_length[i][0]; ++k) delays[i][0][k] = ind++;
-            }
-        }
-
-        for (auto i = 0; i != N; ++i) {
-            N_pre[i] = 0;
-            for (auto j = 0; j != Ne; ++j) {
-                for (auto k = 0; k != M; k++) {
-                    if (post[j][k] == i) {		// find all presynaptic neurons
-                        I_pre[i][N_pre[i]] = j;	// add this neuron to the list
-                        for (auto dd = 0; dd != D; ++dd)	// find the delay
-                            for (auto jj = 0; jj != delays_length[j][dd]; ++jj)
-                                if (post[j][delays[j][dd][jj]] == i) D_pre[i][N_pre[i]] = dd;
-                        s_pre[i][N_pre[i]] = &s[j][k];	// pointer to the synaptic weight
-                        sd_pre[i][N_pre[i]++] = &sd[j][k];// pointer to the derivative
+                else {
+                    r = Get_Random(Ne); // inh -> exc only
+                }
+                if (r == i) {
+                    exists = 1; // no self-synapses
+                }
+                for (auto k = 0; k != j; ++k) {
+                    if (post[i][k] == r) {
+                        exists = 1; // synapse already exists
                     }
                 }
+            } while (exists == 1);
+            post[i][j] = r;
+        }
+    }
+    for (auto i = 0; i != Ne; ++i)	for (auto j = 0; j != M; ++j) s[i][j] = 6.0;  // initial exc. synaptic weights
+    for (auto i = Ne; i != N; ++i)	for (auto j = 0; j != M; ++j) s[i][j] = -5.0; // inhibitory synaptic weights
+    for (auto i = 0; i != N; ++i)	for (auto j = 0; j != M; ++j) sd[i][j] = 0.0; // synaptic derivatives
+    for (auto i = 0; i != N; ++i) {
+        auto ind = 0;
+        if (i < Ne) {
+            for (auto j = 0; j != D; ++j) {
+                delays_length[i][j] = M / D;	// uniform distribution of exc. synaptic delays
+                for (auto k = 0; k != delays_length[i][j]; ++k) delays[i][j][k] = ind++;
             }
         }
+        else {
+            for (auto j = 0; j != D; ++j) delays_length[i][j] = 0;
+            delays_length[i][0] = M;			// all inhibitory delays are 1 ms
+            for (auto k = 0; k != delays_length[i][0]; ++k) delays[i][0][k] = ind++;
+        }
+    }
 
-        for (auto i = 0; i != N; ++i)	for (auto j = 0; j != 1 + D; ++j) LTP[i][j] = 0.0;
-        for (auto i = 0; i != N; ++i)	LTD[i] = 0.0;
-        for (auto i = 0; i != N; ++i)	V[i] = -65.0;		// initial values for V
-        for (auto i = 0; i != N; ++i)	U[i] = 0.2*V[i];	// initial values for U
+    for (auto i = 0; i != N; ++i) {
+        N_pre[i] = 0;
+        for (auto j = 0; j != Ne; ++j) {
+            for (auto k = 0; k != M; k++) {
+                if (post[j][k] == i) {		// find all presynaptic neurons
+                    I_pre[i][N_pre[i]] = j;	// add this neuron to the list
+                    for (auto dd = 0; dd != D; ++dd)	// find the delay
+                        for (auto jj = 0; jj != delays_length[j][dd]; ++jj)
+                            if (post[j][delays[j][dd][jj]] == i) D_pre[i][N_pre[i]] = dd;
+                    s_pre[i][N_pre[i]] = &s[j][k];	// pointer to the synaptic weight
+                    sd_pre[i][N_pre[i]++] = &sd[j][k];// pointer to the derivative
+                }
+            }
+        }
+    }
 
-        N_firings = 1;		// spike timings
-        firings[0][0] = -D;	// put a dummy spike at -D for simulation efficiency
-        firings[0][1] = 0;	// index of the dummy spike
+    for (auto i = 0; i != N; ++i)	for (auto j = 0; j != 1 + D; ++j) LTP[i][j] = 0.0;
+    for (auto i = 0; i != N; ++i)	LTD[i] = 0.0;
+    for (auto i = 0; i != N; ++i)	V[i] = -65.0;		// initial values for V
+    for (auto i = 0; i != N; ++i)	U[i] = 0.2*V[i];	// initial values for U
+
+    N_firings = 1;		// spike timings
+    firings[0][0] = -D;	// put a dummy spike at -D for simulation efficiency
+    firings[0][1] = 0;	// index of the dummy spike
 }
 
 void izhikevich_SPNET::Save_Data() {
