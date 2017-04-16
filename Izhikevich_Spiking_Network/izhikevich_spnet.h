@@ -25,6 +25,7 @@ public:
     long long Get_Random(const int &max);
     void Initialize();
     void Save_Data();
+    void Display_LCD();
     std::pair<QVector<double>, QVector<double>> Data();
     void Simulation();
 
@@ -60,7 +61,7 @@ private:
     vector<double> I; //Current
     long long sec = 0; //Simulation time
     long long T = 1; //Total simulaton time
-    long long count_t = 0; //Sum of step
+    double count_sec = 0.0; //Sum of sec
 };
 
 #endif // IZHIKEVICH_SPNET_H

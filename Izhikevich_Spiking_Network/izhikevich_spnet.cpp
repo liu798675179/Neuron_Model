@@ -14,6 +14,11 @@ izhikevich_SPNET::izhikevich_SPNET(QWidget *parent) :
     ui(new Ui::izhikevich_SPNET)
 {
     ui->setupUi(this);
+
+    Initialize();
+
+    ui->spinBox->setMinimum(1);
+    ui->spinBox->setMaximum(864000);
 }
 
 izhikevich_SPNET::~izhikevich_SPNET()
@@ -158,6 +163,18 @@ void izhikevich_SPNET::Save_Data() {
     }
 }
 
+void izhikevich_SPNET::Display_LCD(){
+    ui->lcdNumber_2->setDecMode();
+    ui->lcdNumber_2->setDigitCount(6);
+    ui->lcdNumber_2->setSegmentStyle(QLCDNumber::Flat);
+    ui->lcdNumber_2->display(count_sec);
+
+    ui->lcdNumber->setDecMode();
+    ui->lcdNumber->setDigitCount(6);
+    ui->lcdNumber->setSegmentStyle(QLCDNumber::Flat);
+    ui->lcdNumber->display(N_firings);
+}
+
 pair<QVector<double>, QVector<double>> izhikevich_SPNET::Data(){
     QVector<double> x, y0;
 
@@ -172,7 +189,7 @@ pair<QVector<double>, QVector<double>> izhikevich_SPNET::Data(){
 }
 
 void izhikevich_SPNET::Simulation() {
-    for (sec = 0; sec != T; sec += 1) {	// simulation of T sec
+    for (; sec != T; sec += 1) {	// simulation of T sec
         for (auto t = 0; t != 1000; ++t) {			// simulation of 1 sec
             for (auto i = 0; i != N; ++i) I[i] = 0.0;	// reset the input
             for (auto i = 0; i != N / 1000; ++i) I[Get_Random(N)] = 20.0;		// random thalamic input
@@ -209,16 +226,16 @@ void izhikevich_SPNET::Simulation() {
                 LTD[i] *= 0.95;
             }
         }
+
+        ++count_sec; //Sum of sec;
+
         //cout << "sec=" << sec << ", firing rate=" << static_cast<double>(N_firings) / N << endl;
 
         //Save_Data();
 
         Control(Data());
 
-        ui->lcdNumber->setDecMode();
-        ui->lcdNumber->setDigitCount(6);
-        ui->lcdNumber->setSegmentStyle(QLCDNumber::Flat);
-        ui->lcdNumber->display(N_firings);
+        Display_LCD();
 
         for (auto i = 0; i != N; ++i) {		// prepare for the next sec
             for (auto j = 0; j != D + 1; ++j)
@@ -244,27 +261,24 @@ void izhikevich_SPNET::Simulation() {
 }
 
 void izhikevich_SPNET::on_pushButton_clicked() {
-    Initialize();
-    Simulation();
+    if(T < count_sec){
+        count_sec = 0.0;
+        sec = 0;
+        Initialize();
+        Simulation();
+    }
+    else{
+        Simulation();
+    }
 }
 
 void izhikevich_SPNET::on_spinBox_editingFinished() {
-    ui->spinBox->setMinimum(1);
-    ui->spinBox->setMaximum(86400);
     T = ui->spinBox->value();
 }
 
 void izhikevich_SPNET::on_pushButton_2_clicked() {
-    count_t = ui->spinBox->value();
-    if(sec != count_t){
-        on_pushButton_clicked();
-        on_pushButton_2_clicked();
-    }
-    else{
-        T = 1;
-        Simulation();
-        ui->spinBox->setValue(++count_t);
-        T = ui->spinBox->value();
-        sec = T;
-    }
+    ++T;
+    on_pushButton_clicked();
+    ui->spinBox->setValue(T);
+    T = ui->spinBox->value();
 }
