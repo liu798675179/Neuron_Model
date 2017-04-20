@@ -110,6 +110,7 @@ void izhikevich_SPNET::Initialize() {
             post[i][j] = r;
         }
     }
+
     for (auto i = 0; i != Ne; ++i)	for (auto j = 0; j != M; ++j) s[i][j] = 6.0;  // initial exc. synaptic weights
     for (auto i = Ne; i != N; ++i)	for (auto j = 0; j != M; ++j) s[i][j] = -5.0; // inhibitory synaptic weights
     for (auto i = 0; i != N; ++i)	for (auto j = 0; j != M; ++j) sd[i][j] = 0.0; // synaptic derivatives
@@ -131,23 +132,25 @@ void izhikevich_SPNET::Initialize() {
     for (auto i = 0; i != N; ++i) {
         N_pre[i] = 0;
         for (auto j = 0; j != Ne; ++j) {
-            for (auto k = 0; k != M; k++) {
+            for (auto k = 0; k != M; ++k) {
                 if (post[j][k] == i) {		// find all presynaptic neurons
                     I_pre[i][N_pre[i]] = j;	// add this neuron to the list
-                    for (auto dd = 0; dd != D; ++dd)	// find the delay
-                        for (auto jj = 0; jj != delays_length[j][dd]; ++jj)
+                    for (auto dd = 0; dd != D; ++dd){	// find the delay
+                        for (auto jj = 0; jj != delays_length[j][dd]; ++jj){
                             if (post[j][delays[j][dd][jj]] == i) D_pre[i][N_pre[i]] = dd;
+                        }
+                    }
                     s_pre[i][N_pre[i]] = &s[j][k];	// pointer to the synaptic weight
-                    sd_pre[i][N_pre[i]++] = &sd[j][k];// pointer to the derivative
+                    sd_pre[i][N_pre[i]++] = &sd[j][k];// pointer to the derivative   
                 }
             }
         }
     }
 
-    for (auto i = 0; i != N; ++i)	for (auto j = 0; j != 1 + D; ++j) LTP[i][j] = 0.0;
+    for (auto i = 0; i != N; ++i)   for (auto j = 0; j != 1 + D; ++j) LTP[i][j] = 0.0;
     for (auto i = 0; i != N; ++i)	LTD[i] = 0.0;
     for (auto i = 0; i != N; ++i)	V[i] = -65.0;		// initial values for V
-    for (auto i = 0; i != N; ++i)	U[i] = 0.2*V[i];	// initial values for U
+    for (auto i = 0; i != N; ++i)	U[i] = 0.2 * V[i];	// initial values for U
 
     N_firings = 1;		// spike timings
     firings[0][0] = -D;	// put a dummy spike at -D for simulation efficiency
@@ -175,15 +178,22 @@ void izhikevich_SPNET::Display_LCD(){
     ui->lcdNumber->display(N_firings);
 }
 
-pair<QVector<double>, QVector<double>> izhikevich_SPNET::Data(){
-    QVector<double> x, y0;
+//pair<QVector<double>, QVector<double>> izhikevich_SPNET::Data(){
+//    QVector<double> x, y0;
 
-    for (auto i = 1; i != N_firings; ++i) {
-        if (firings[i][0] >= 0) {
-            x.push_back(firings[i][0]);
-            y0.push_back(firings[i][1]);
-        }
-    }
+//    for (auto i = 1; i != N_firings; ++i) {
+//        if (firings[i][0] >= 0) {
+//            x.push_back(firings[i][0]);
+//            y0.push_back(firings[i][1]);
+//        }
+//    }
+
+//    return make_pair(x, y0);
+//}
+
+QVector<double> vec_x, vec_y0;
+
+pair<QVector<double>, QVector<double>> izhikevich_SPNET::Data(QVector<double> &x, QVector<double> &y0){
 
     return make_pair(x, y0);
 }
@@ -233,7 +243,11 @@ void izhikevich_SPNET::Simulation() {
 
         //Save_Data();
 
-        Control(Data());
+        //Control(Data));
+
+        vec_x.push_back(sec);
+        vec_y0.push_back(N_firings);
+        Control(Data(vec_x, vec_y0));
 
         Display_LCD();
 
@@ -262,6 +276,9 @@ void izhikevich_SPNET::Simulation() {
 
 void izhikevich_SPNET::on_pushButton_clicked() {
     if(T < count_sec){
+        vec_x.clear();
+        vec_y0.clear();
+
         count_sec = 0.0;
         sec = 0;
         Initialize();
