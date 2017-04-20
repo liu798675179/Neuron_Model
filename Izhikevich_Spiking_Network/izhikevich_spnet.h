@@ -24,9 +24,11 @@ public:
     void PrintPlot(QCustomPlot *SPNET_Plot, std::pair<QVector<double>, QVector<double>> temp_Pair);
     long long Get_Random(const int &max);
     void Initialize();
-    void Save_Data();
+    void Save_Data_post();
+    void Save_Data_firings();
     void Display_LCD();
-    std::pair<QVector<double>, QVector<double>> Data();
+    std::pair<QVector<double>, QVector<double>> Data_firings();
+    std::pair<QVector<double>, QVector<double>> Data_N_firings();
     void Simulation();
 
 private slots:
@@ -62,6 +64,7 @@ private:
     long long sec = 0; //Simulation time
     long long T = 1; //Total simulaton time
     double count_sec = 0.0; //Sum of sec
+    QVector<double> vec_Nf_x, vec_Nf_y0; //Save sec and N_firings
 };
 
 #endif // IZHIKEVICH_SPNET_H

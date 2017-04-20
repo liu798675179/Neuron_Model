@@ -41,11 +41,62 @@ void izhikevich_SPNET::PrintPlot(QCustomPlot *SPNET_Plot, pair<QVector<double>, 
     SPNET_Plot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
 }
 
+void izhikevich_SPNET::Display_LCD(){
+    ui->lcdNumber_2->setDecMode();
+    ui->lcdNumber_2->setDigitCount(6);
+    ui->lcdNumber_2->setSegmentStyle(QLCDNumber::Flat);
+    ui->lcdNumber_2->display(count_sec);
+
+    ui->lcdNumber->setDecMode();
+    ui->lcdNumber->setDigitCount(6);
+    ui->lcdNumber->setSegmentStyle(QLCDNumber::Flat);
+    ui->lcdNumber->display(N_firings);
+}
+
 long long izhikevich_SPNET::Get_Random(const int &max) {
     static default_random_engine e(time(nullptr));
     uniform_int_distribution<long long> u(0, max - 1);
 
     return u(e);
+}
+
+void izhikevich_SPNET::Save_Data_post() {
+    ofstream out("synapses.dat");
+    for (auto i : post) {
+        for(auto j : i){
+            out << j << " ";
+        }
+        out << endl;
+    }
+}
+
+void izhikevich_SPNET::Save_Data_firings() {
+    ofstream out("spikes.dat");
+    for (auto i = 1; i != N_firings; ++i) {
+        if (firings[i][0] >= 0) {
+            out << firings[i][0] << " " << firings[i][1] << endl;
+        }
+    }
+}
+
+pair<QVector<double>, QVector<double>> izhikevich_SPNET::Data_firings(){
+    QVector<double> x, y0;
+
+    for (auto i = 1; i != N_firings; ++i) {
+        if (firings[i][0] >= 0) {
+            x.push_back(firings[i][0]);
+            y0.push_back(firings[i][1]);
+        }
+    }
+
+    return make_pair(x, y0);
+}
+
+pair<QVector<double>, QVector<double>> izhikevich_SPNET::Data_N_firings(){
+    vec_Nf_x.push_back(sec);
+    vec_Nf_y0.push_back(N_firings);
+
+    return make_pair(vec_Nf_x, vec_Nf_y0);
 }
 
 void izhikevich_SPNET::Initialize() {
@@ -141,7 +192,7 @@ void izhikevich_SPNET::Initialize() {
                         }
                     }
                     s_pre[i][N_pre[i]] = &s[j][k];	// pointer to the synaptic weight
-                    sd_pre[i][N_pre[i]++] = &sd[j][k];// pointer to the derivative   
+                    sd_pre[i][N_pre[i]++] = &sd[j][k];// pointer to the derivative
                 }
             }
         }
@@ -155,47 +206,8 @@ void izhikevich_SPNET::Initialize() {
     N_firings = 1;		// spike timings
     firings[0][0] = -D;	// put a dummy spike at -D for simulation efficiency
     firings[0][1] = 0;	// index of the dummy spike
-}
 
-void izhikevich_SPNET::Save_Data() {
-    ofstream out("spikes.dat");
-    for (auto i = 1; i != N_firings; ++i) {
-        if (firings[i][0] >= 0) {
-            out << firings[i][0] << " " << firings[i][1] << endl;
-        }
-    }
-}
-
-void izhikevich_SPNET::Display_LCD(){
-    ui->lcdNumber_2->setDecMode();
-    ui->lcdNumber_2->setDigitCount(6);
-    ui->lcdNumber_2->setSegmentStyle(QLCDNumber::Flat);
-    ui->lcdNumber_2->display(count_sec);
-
-    ui->lcdNumber->setDecMode();
-    ui->lcdNumber->setDigitCount(6);
-    ui->lcdNumber->setSegmentStyle(QLCDNumber::Flat);
-    ui->lcdNumber->display(N_firings);
-}
-
-//pair<QVector<double>, QVector<double>> izhikevich_SPNET::Data(){
-//    QVector<double> x, y0;
-
-//    for (auto i = 1; i != N_firings; ++i) {
-//        if (firings[i][0] >= 0) {
-//            x.push_back(firings[i][0]);
-//            y0.push_back(firings[i][1]);
-//        }
-//    }
-
-//    return make_pair(x, y0);
-//}
-
-QVector<double> vec_x, vec_y0;
-
-pair<QVector<double>, QVector<double>> izhikevich_SPNET::Data(QVector<double> &x, QVector<double> &y0){
-
-    return make_pair(x, y0);
+    Save_Data_post();
 }
 
 void izhikevich_SPNET::Simulation() {
@@ -241,13 +253,11 @@ void izhikevich_SPNET::Simulation() {
 
         //cout << "sec=" << sec << ", firing rate=" << static_cast<double>(N_firings) / N << endl;
 
-        //Save_Data();
+        //Save_Data_firings();
 
-        //Control(Data));
+        Control(Data_firings());
 
-        vec_x.push_back(sec);
-        vec_y0.push_back(N_firings);
-        Control(Data(vec_x, vec_y0));
+        //Control(Data_N_firings());
 
         Display_LCD();
 
@@ -276,8 +286,8 @@ void izhikevich_SPNET::Simulation() {
 
 void izhikevich_SPNET::on_pushButton_clicked() {
     if(T < count_sec){
-        vec_x.clear();
-        vec_y0.clear();
+        vec_Nf_x.clear();
+        vec_Nf_y0.clear();
 
         count_sec = 0.0;
         sec = 0;
