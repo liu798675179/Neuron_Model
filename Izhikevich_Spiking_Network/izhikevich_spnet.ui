@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>841</width>
-    <height>541</height>
+    <width>1095</width>
+    <height>724</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -16,7 +16,14 @@
   <widget class="QWidget" name="centralWidget">
    <layout class="QGridLayout" name="gridLayout">
     <item row="0" column="0">
-     <widget class="QCustomPlot" name="SPNET_Plot" native="true"/>
+     <widget class="QSplitter" name="splitter">
+      <property name="orientation">
+       <enum>Qt::Vertical</enum>
+      </property>
+      <widget class="QCustomPlot" name="SPNET_Plot" native="true"/>
+      <widget class="QCustomPlot" name="SPNET_Plot_2" native="true"/>
+      <widget class="QCustomPlot" name="SPNET_Plot_3" native="true"/>
+     </widget>
     </item>
     <item row="1" column="0">
      <layout class="QHBoxLayout" name="horizontalLayout">

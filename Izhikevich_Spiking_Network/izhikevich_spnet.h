@@ -5,6 +5,7 @@
 #include "qcustomplot.h"
 #include <utility>
 #include <vector>
+#include <map>
 
 using std::vector;
 
@@ -20,8 +21,10 @@ public:
     explicit izhikevich_SPNET(QWidget *parent = 0);
     ~izhikevich_SPNET();
 
-    void Control(std::pair<QVector<double>, QVector<double>> temp_Pair);
+    void Control(int it, std::pair<QVector<double>, QVector<double>> temp_Pair);
     void PrintPlot(QCustomPlot *SPNET_Plot, std::pair<QVector<double>, QVector<double>> temp_Pair);
+    void PrintPlot_2(QCustomPlot *SPNET_Plot_2, std::pair<QVector<double>, QVector<double>> temp_Pair);
+    void PrintPlot_3(QCustomPlot *SPNET_Plot_3, std::pair<QVector<double>, QVector<double>> temp_Pair);
     long long Get_Random(const int &max);
     void Initialize();
     void Save_Data_post();
@@ -29,6 +32,7 @@ public:
     void Display_LCD();
     std::pair<QVector<double>, QVector<double>> Data_firings();
     std::pair<QVector<double>, QVector<double>> Data_N_firings();
+	std::pair<QVector<double>, QVector<double>> Data_Power_Law();
     void Simulation();
 
 private slots:
@@ -64,7 +68,9 @@ private:
     long long sec = 0; //Simulation time
     long long T = 1; //Total simulaton time
     double count_sec = 0.0; //Sum of sec
+    QVector<double> vec_f_x, vec_f_y0; //Save sec and firings
     QVector<double> vec_Nf_x, vec_Nf_y0; //Save sec and N_firings
+	std::map<int, int> map_size_count;
 };
 
 #endif // IZHIKEVICH_SPNET_H
