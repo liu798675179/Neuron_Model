@@ -45,12 +45,12 @@ void izhikevich_SPNET::Control(int it, pair<QVector<double>, QVector<double>> te
 }
 
 void izhikevich_SPNET::PrintPlot(QCustomPlot *SPNET_Plot, pair<QVector<double>, QVector<double>> temp_Pair) {
-	SPNET_Plot->addGraph(SPNET_Plot->xAxis, SPNET_Plot->yAxis);
-	SPNET_Plot->graph(0)->addData(temp_Pair.first, temp_Pair.second);
-	SPNET_Plot->graph(0)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle, QPen(Qt::black), QBrush(Qt::black), 2));
-	SPNET_Plot->graph(0)->setLineStyle(QCPGraph::lsNone);
-	SPNET_Plot->graph(0)->rescaleAxes();
-	SPNET_Plot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
+    SPNET_Plot->addGraph(SPNET_Plot->xAxis, SPNET_Plot->yAxis);
+    SPNET_Plot->graph(0)->addData(temp_Pair.first, temp_Pair.second);
+    SPNET_Plot->graph(0)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle, QPen(Qt::black), QBrush(Qt::black), 2));
+    SPNET_Plot->graph(0)->setLineStyle(QCPGraph::lsNone);
+    SPNET_Plot->graph(0)->rescaleAxes();
+    SPNET_Plot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
 }
 
 void izhikevich_SPNET::PrintPlot_2(QCustomPlot *SPNET_Plot_2, pair<QVector<double>, QVector<double>> temp_Pair) {
@@ -72,15 +72,15 @@ void izhikevich_SPNET::PrintPlot_3(QCustomPlot *SPNET_Plot_3, pair<QVector<doubl
 }
 
 void izhikevich_SPNET::Display_LCD() {
-	ui->lcdNumber_2->setDecMode();
-	ui->lcdNumber_2->setDigitCount(6);
-	ui->lcdNumber_2->setSegmentStyle(QLCDNumber::Flat);
-	ui->lcdNumber_2->display(count_sec);
+    ui->lcdNumber_2->setDecMode();
+    ui->lcdNumber_2->setDigitCount(6);
+    ui->lcdNumber_2->setSegmentStyle(QLCDNumber::Flat);
+    ui->lcdNumber_2->display(count_sec);
 
-	ui->lcdNumber->setDecMode();
-	ui->lcdNumber->setDigitCount(6);
-	ui->lcdNumber->setSegmentStyle(QLCDNumber::Flat);
-	ui->lcdNumber->display(N_firings);
+    ui->lcdNumber->setDecMode();
+    ui->lcdNumber->setDigitCount(6);
+    ui->lcdNumber->setSegmentStyle(QLCDNumber::Flat);
+    ui->lcdNumber->display(N_firings);
 }
 
 long long izhikevich_SPNET::Get_Random(const int &max) {
@@ -101,24 +101,24 @@ void izhikevich_SPNET::Save_Data_post() {
 }
 
 void izhikevich_SPNET::Save_Data_firings() {
-	ofstream out("spikes.dat");
-	for (auto i = 1; i != N_firings; ++i) {
-		if (firings[i][0] >= 0) {
-			out << firings[i][0] << " " << firings[i][1] << endl;
-		}
-	}
+    ofstream out("spikes.dat");
+    for (auto i = 1; i != N_firings; ++i) {
+	if (firings[i][0] >= 0) {
+	    out << firings[i][0] << " " << firings[i][1] << endl;
+        }
+    }
 }
 
 pair<QVector<double>, QVector<double>> izhikevich_SPNET::Data_firings() {
-	vec_f_x.clear();
-	vec_f_y0.clear();
+    vec_f_x.clear();
+    vec_f_y0.clear();
 
-	for (auto i = 1; i != N_firings; ++i) {
-		if (firings[i][0] >= 0) {
-			vec_f_x.push_back(firings[i][0]);
-			vec_f_y0.push_back(firings[i][1]);
-		}
+    for (auto i = 1; i != N_firings; ++i) {
+	if (firings[i][0] >= 0) {
+	    vec_f_x.push_back(firings[i][0]);
+	    vec_f_y0.push_back(firings[i][1]);
 	}
+    }
 
     ofstream out("vec_f_x.dat");
     for (auto i : vec_f_x) {
@@ -129,42 +129,41 @@ pair<QVector<double>, QVector<double>> izhikevich_SPNET::Data_firings() {
 }
 
 pair<QVector<double>, QVector<double>> izhikevich_SPNET::Data_N_firings() {
-	vec_Nf_x.push_back(sec);
-	vec_Nf_y0.push_back(N_firings);
+    vec_Nf_x.push_back(sec);
+    vec_Nf_y0.push_back(N_firings);
 
-	return make_pair(vec_Nf_x, vec_Nf_y0);
+    return make_pair(vec_Nf_x, vec_Nf_y0);
 }
 
 pair<QVector<double>, QVector<double>> izhikevich_SPNET::Data_Power_Law() {
-	QVector<double> vec_size, vec_count;
-	ofstream out("power_law.dat");
-	map_size_count.clear();
+    QVector<double> vec_size, vec_count;
+    ofstream out("power_law.dat");
+    map_size_count.clear();
 
-	Data_firings();
+    Data_firings();
 
-	for(auto i = 0; i != N; ++i) {
-		auto temp_count = count(vec_f_x.begin(), vec_f_x.end(), i);
+    for(auto i = 0; i != N; ++i) {
+	auto temp_count = count(vec_f_x.begin(), vec_f_x.end(), i);
 
         if (temp_count > 0) {
             ++map_size_count[temp_count];
         }
-	}
+    }
 
 //    //erase some small value
 //    auto temp_it = minmax_element(map_size_count.begin(), map_size_count.end(),[](pair<int, int> i, pair<int, int> j){return i.second < j.second;});
 //    auto temp_map_max = temp_it.second->first;
 //    map_size_count.erase(map_size_count.begin(), std::find_if(map_size_count.begin(), map_size_count.end(), [&](pair<int, int> i){return i.first == temp_map_max;}));
 
-	for(auto i : map_size_count) {
+    for(auto i : map_size_count) {
         vec_size.push_back(log10(i.first));
         vec_count.push_back(log10(i.second));
 
         out << log10(i.first) << " " << log10(i.second) << endl;
 	}
-
-	return make_pair(vec_size, vec_count);
+	
+    return make_pair(vec_size, vec_count);
 }
-
 
 void izhikevich_SPNET::Initialize() {
     post.resize(N);
