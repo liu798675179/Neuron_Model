@@ -51,7 +51,7 @@ private:
     const int M = 100; // the number of synapses per neuron
     const int D = 20; // maximal axonal conduction delay
     double sm = 10.0; // maximal synaptic strength
-    vector<vector<long long>> post; //[N][M] indeces of postsynaptic neurons
+    vector<vector<int>> post; //[N][M] indeces of postsynaptic neurons
     vector<vector<double>> s, sd; //[N][M] matrix of synaptic weights and their derivatives
     vector<vector<int>> delays_length; //[N][D] distribution of delays
     vector<vector<vector<int>>> delays; //[N][D][M] arrangement of delays
