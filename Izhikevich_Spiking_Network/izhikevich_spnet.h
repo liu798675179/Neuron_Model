@@ -25,9 +25,15 @@ public:
     void PrintPlot(QCustomPlot *SPNET_Plot, std::pair<QVector<double>, QVector<double>> temp_Pair);
     void PrintPlot_2(QCustomPlot *SPNET_Plot_2, std::pair<QVector<double>, QVector<double>> temp_Pair);
     void PrintPlot_3(QCustomPlot *SPNET_Plot_3, std::pair<QVector<double>, QVector<double>> temp_Pair);
-    long long Get_Random(const int &max);
+    int Get_Random_int(const int &max);
+    int Get_Random_int(const int &min, const int &max);
+    double Get_Random_real();
+    double Noise();
     void Initialize();
     void Save_Data_post();
+    void Save_Data_delay();
+    void Save_Data_weight();
+    void Save_Data_current();
     void Save_Data_firings();
     void Display_LCD();
     std::pair<QVector<double>, QVector<double>> Data_firings();
@@ -57,18 +63,20 @@ private:
     vector<vector<vector<int>>> delays; //[N][D][M] arrangement of delays
     vector<int> N_pre; //[N] presynaptic information
     vector<vector<int>> I_pre, D_pre; //[N][3*M] presynaptic information
-    vector<vector<double*>> s_pre, sd_pre; //[N][3*M] presynaptic weights
+    vector<vector<double*>> sd_pre; //[N][3*M] presynaptic weights
     vector<vector<double>> LTP; //[N][1001 + D] STDP functions
     vector<double> LTD; //[N] STDP functions
-    vector<double> a, d, V, U; //[N] neuronal dynamics parameters and activity variables
+    vector<double> a, b, c, d, V, U; //[N] neuronal dynamics parameters and activity variables
     int N_firings; // the number of fired neurons
     const int N_firings_max = 100 * N; // upper limit on the number of fired neurons per sec
     vector<vector<int>> firings; //[N_frings_max][2] // indeces and timings of spikes
     vector<double> I; //Current
+    vector<vector<double>> Save_I; // Current of 1000ms
     long long sec = 0; //Simulation time
     long long T = 1; //Total simulaton time
     double count_sec = 0.0; //Sum of sec
-    QVector<double> vec_f_x, vec_f_y0; //Save sec and firings
+    int temp_10 = 0;
+    QVector<double> vec_f_x, vec_f_y0, vec_f_x_10; //Save sec and firings
     QVector<double> vec_Nf_x, vec_Nf_y0; //Save sec and N_firings
 	std::map<int, int> map_size_count;
 };
